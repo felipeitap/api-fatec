@@ -1,6 +1,7 @@
 package br.com.api.fatec.apifatec.domain.pedidovenda;
 
 import br.com.api.fatec.apifatec.domain.cliente.ClienteService;
+import br.com.api.fatec.apifatec.domain.cliente.dtos.ClientePedidoQuantidadeDTO;
 import br.com.api.fatec.apifatec.domain.produto.ProdutoService;
 import br.com.api.fatec.apifatec.entities.Cliente;
 import br.com.api.fatec.apifatec.entities.PedidoVenda;
@@ -15,6 +16,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class PedidoVendaService {
@@ -140,5 +142,15 @@ public class PedidoVendaService {
                 throw new IllegalStateException("O pedido já se encontra Cancelado.");
             }
         }).orElseThrow(() -> new RuntimeException("Pedido não encontrado"));
+    }
+    
+    public List<ClientePedidoQuantidadeDTO> getTotalQuantidadePedidosPorCliente() {
+        List<PedidoVenda> pedidos = pedidoVendaRepository.findAll();
+
+        return pedidos.stream()
+            .collect(Collectors.groupingBy(p -> p.getCliente().getId(), Collectors.counting()))
+            .entrySet().stream()
+            .map(entry -> new ClientePedidoQuantidadeDTO(entry.getKey(), entry.getValue()))
+            .collect(Collectors.toList());
     }
 }
